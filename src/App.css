@@ -1,0 +1,164 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* High-contrast styles for accessibility */
+.container {
+  width: 1100px;
+  margin: 10px auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  color: #111;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #f7d489;
+}
+
+.search-box {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.search-box label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #111;
+}
+
+select, button {
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111;
+  background: #fdeded;
+}
+
+select:focus, button:focus {
+  outline: 2px solid #1976d2;
+}
+
+button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.9rem;
+}
+button:hover {
+  background: #125ea2;
+}
+
+.results {
+  margin-top: 2rem;
+  color: #111;
+}
+
+.results h2 {
+  margin-bottom: 0.5rem;
+  color: #efaaaa;
+}
+
+.results ul {
+  padding-left: 1.2rem;
+}
+
+.results p {
+  color: #c00;
+  font-weight: 600;
+  text-align: center;
+  background: transparent;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    width: 95%;
+    margin: 16px auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    width: calc(100% - 24px);
+    margin: 12px auto;
+  }
+  .search-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  .search-box label {
+    width: 100%;
+  }
+  select, button {
+    width: 100%;
+  }
+  h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+  h1 {
+    font-size: 1.6rem;
+  }
+  .results ul {
+    padding-left: 1rem;
+  }
+}
