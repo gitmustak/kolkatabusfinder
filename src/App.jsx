@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { busRoutes, stops } from './busData'
 import './App.css'
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
@@ -139,16 +139,109 @@ function MapVisualizer({ direct, combos, source, destination }) {
   )
 }
 
+function SearchInput({ label, value, onChange, options, placeholder }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [filter, setFilter] = useState('')
+  const wrapperRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const displayValue = isOpen ? filter : value
+  const filteredOptions = options.filter(opt => 
+    opt.toLowerCase().includes(displayValue.toLowerCase())
+  )
+
+  return (
+    <div className="input-group" ref={wrapperRef}>
+      <label>{label}</label>
+      <div className="input-wrapper">
+        <input
+          type="text"
+          className="custom-input"
+          placeholder={placeholder}
+          value={displayValue}
+          onChange={(e) => {
+            setFilter(e.target.value)
+            if (value) onChange('')
+            setIsOpen(true)
+          }}
+          onFocus={() => {
+            setFilter('')
+            setIsOpen(true)
+          }}
+        />
+        {(value || filter) && (
+          <button 
+            type="button" 
+            className="clear-btn" 
+            onClick={() => {
+              setFilter('')
+              onChange('')
+              setIsOpen(false)
+            }}
+            title="Clear input"
+          >
+            &times;
+          </button>
+        )}
+      </div>
+      {isOpen && (
+        <ul className="dropdown-list">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map(opt => (
+              <li 
+                key={opt} 
+                className={`dropdown-item ${opt === value ? 'active' : ''}`}
+                onClick={() => {
+                  onChange(opt)
+                  setFilter('')
+                  setIsOpen(false)
+                }}
+              >
+                {opt}
+              </li>
+            ))
+          ) : (
+            <li className="dropdown-item" style={{ color: 'var(--text-muted)' }}>No stops found</li>
+          )}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 function App() {
   const [source, setSource] = useState('')
   const [destination, setDestination] = useState('')
   const [results, setResults] = useState(null)
+  const [theme, setTheme] = useState('light')
+
+  useEffect(() => {
+    document.body.dataset.theme = theme
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }
 
   const allStops = Array.from(new Set(busRoutes.flatMap(r => r.stops))).sort()
 
+  const handleSwap = () => {
+    setSource(destination)
+    setDestination(source)
+  }
+
   const handleSearch = () => {
     if (!source || !destination || source === destination) {
-      setResults({ error: 'Please select different source and destination.' })
+      setResults({ error: 'Please select valid and distinct source and destination.' })
       return
     }
     const direct = findDirectBuses(source, destination)
@@ -165,58 +258,103 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <h1>Kolkata Bus Route Finder</h1>
-      <div className="search-box">
-        <label>
-          Source:
-          <select value={source} onChange={e => setSource(e.target.value)}>
-            <option value="">Select Source</option>
-            {allStops.map(stop => (
-              <option key={stop} value={stop}>{stop}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Destination:
-          <select value={destination} onChange={e => setDestination(e.target.value)}>
-            <option value="">Select Destination</option>
-            {allStops.map(stop => (
-              <option key={stop} value={stop}>{stop}</option>
-            ))}
-          </select>
-        </label>
-        <button onClick={handleSearch}>Search</button>
+    <>
+      <div className="bg-shapes">
+        <div className="shape-1"></div>
+        <div className="shape-2"></div>
+        <div className="shape-3"></div>
       </div>
-      <div className="results">
-        {results?.error && <p>{results.error}</p>}
-        {results?.direct && (
-          <div>
-            <h2>Direct Buses:</h2>
-            <ul>
-              {results.direct.map(route => (
-                <li key={route.name}>{route.name} ({route.stops.join(' → ')})</li>
-              ))}
-            </ul>
+      
+      <header className="app-header">
+        <div className="app-title">Kolkata Bus Finder</div>
+        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+          {theme === 'light' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          )}
+        </button>
+      </header>
+
+      <div className="container">
+        <section className="hero">
+          <h1>Find Your Bus Route</h1>
+          <p>Search across Kolkata to find the fastest way to your destination.</p>
+        </section>
+
+        <div className="search-card">
+          <div className="search-fields">
+            <SearchInput 
+              label="Source" 
+              value={source} 
+              onChange={setSource} 
+              options={allStops}
+              placeholder="Search source stop..."
+            />
+            <button className="swap-btn" onClick={handleSwap} aria-label="Swap source and destination" title="Swap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m16 3 4 4-4 4"/>
+                <path d="M20 7H4"/>
+                <path d="m8 21-4-4 4-4"/>
+                <path d="M4 17h16"/>
+              </svg>
+            </button>
+            <SearchInput 
+              label="Destination" 
+              value={destination} 
+              onChange={setDestination} 
+              options={allStops}
+              placeholder="Search destination stop..."
+            />
+          </div>
+          <button className="search-btn" onClick={handleSearch}>Find Routes</button>
+        </div>
+
+        {results && (
+          <div className="results-card">
+            {results.error && <div className="error-msg">{results.error}</div>}
+            
+            {results.direct && (
+              <div className="results-section">
+                <h2>Direct Buses</h2>
+                <div className="route-list">
+                  {results.direct.map(route => (
+                    <div className="route-item" key={route.name}>
+                      <div className="route-name">{route.name}</div>
+                      <div className="route-stops">{route.stops.join(' → ')}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {results.combos && (
+              <div className="results-section">
+                <h2>Bus Combinations (1 Transfer)</h2>
+                <div className="route-list">
+                  {results.combos.map((combo, idx) => (
+                    <div className="route-item combo-item" key={idx}>
+                      <div className="combo-step">
+                        <span className="combo-bus">{combo.first.bus}</span>
+                        <span className="combo-path">{combo.first.from} → {combo.first.to}</span>
+                      </div>
+                      <div className="combo-step">
+                        <span className="combo-bus">{combo.second.bus}</span>
+                        <span className="combo-path">{combo.second.from} → {combo.second.to}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(results.direct || results.combos) && (
+              <MapVisualizer direct={results.direct} combos={results.combos} source={source} destination={destination} />
+            )}
           </div>
         )}
-        {results?.combos && (
-          <div>
-            <h2>Bus Combinations:</h2>
-            <ul>
-              {results.combos.map((combo, idx) => (
-                <li key={idx}>
-                  {combo.first.bus} ({combo.first.from} → {combo.first.to}) → {combo.second.bus} ({combo.second.from} → {combo.second.to})
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {(results?.direct || results?.combos) && (
-          <MapVisualizer direct={results.direct} combos={results.combos} source={source} destination={destination} />
-        )}
       </div>
-    </div>
+    </>
   )
 }
 
