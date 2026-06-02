@@ -259,11 +259,6 @@ function App() {
 
   return (
     <>
-      <div className="bg-shapes">
-        <div className="shape-1"></div>
-        <div className="shape-2"></div>
-        <div className="shape-3"></div>
-      </div>
       
       <header className="app-header">
         <div className="app-title">Kolkata Bus Finder</div>
